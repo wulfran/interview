@@ -1,6 +1,6 @@
 <template>
     <default-layout>
-        <h1 class="text-red-500">Lorem Ipsum</h1>
+        <div class="p-4 rounded-2xl bg-gray-200 hover:bg-gray-300" @click="lorem">Test</div>
     </default-layout>
 </template>
 
@@ -10,6 +10,7 @@ import DefaultLayout from "../layouts/defaultLayout.vue";
 
 export default defineComponent({
     components: {DefaultLayout},
-    layout: 'default'
+    mounted() {},
+    methods: {}
 })
 </script>
