@@ -20,7 +20,7 @@ class TeamResource extends JsonResource
             'points' => $this->points,
             'matches_played' => $this->matches_played,
             'wins' => $this->wins,
-            'drafts' => $this->drafts,
+            'draws' => $this->draws,
             'loses' => $this->loses,
             'goal_balance' => $this->goal_balance,
         ];

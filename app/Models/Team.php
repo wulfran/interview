@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $points
  * @property int $matches_played
  * @property int $wins
- * @property int $drafts
+ * @property int $draws
  * @property int $loses
  * @property int $goal_balance
  */
@@ -26,7 +26,7 @@ class Team extends Model
         'points',
         'matches_played',
         'wins',
-        'drafts',
+        'draws',
         'loses',
         'goal_balance',
     ];

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->integer('points');
             $table->integer('matches_played');
             $table->integer('wins');
-            $table->integer('drafts');
+            $table->integer('draws');
             $table->integer('loses');
             $table->integer('goal_balance');
         });
