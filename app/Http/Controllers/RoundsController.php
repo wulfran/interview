@@ -5,15 +5,22 @@ namespace App\Http\Controllers;
 use App\Actions\SimulateRoundAction;
 use App\Http\Resources\Rounds\RoundCollection;
 use App\Jobs\CalculateLeagueOdds;
-use App\Models\Round;
+use App\Repositories\RoundRepository\RoundRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 
 class RoundsController extends Controller
 {
-    public function simulateRound(SimulateRoundAction $action): JsonResponse
+    public function __construct(
+        protected readonly RoundRepositoryInterface $roundRepository,
+        protected readonly SimulateRoundAction $simulateRoundAction
+    )
+    {
+    }
+
+    public function simulateRound(): JsonResponse
     {
         try {
-            $action->execute();
+            $this->simulateRoundAction->execute();
 
             CalculateLeagueOdds::dispatch();
 
@@ -29,10 +36,7 @@ class RoundsController extends Controller
 
     public function index(): JsonResponse
     {
-        $rounds = Round::query()
-            ->select()
-            ->orderBy('id', 'desc')
-            ->get();
+        $rounds = $this->roundRepository->all();
 
         return response()->json([
             'data' => new RoundCollection($rounds),
