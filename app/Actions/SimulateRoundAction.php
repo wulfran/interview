@@ -25,6 +25,18 @@ class SimulateRoundAction
     {
     }
 
+    public function execute(): void
+    {
+        $this->initialize();
+        $this->setPairs();
+        try {
+            $this->playMatch();
+            $this->playMatch('secondMatch');
+        } catch (\Throwable $e) {
+            throw $e;
+        }
+    }
+
     private function initialize(): void
     {
         $this->initializeTeams();
@@ -53,18 +65,6 @@ class SimulateRoundAction
     {
         $this->firstMatch = collect();
         $this->secondMatch = collect();
-    }
-
-    public function execute(): void
-    {
-        $this->initialize();
-        $this->setPairs();
-        try {
-            $this->playMatch();
-            $this->playMatch('secondMatch');
-        } catch (\Throwable $e) {
-            throw $e;
-        }
     }
 
     private function setPairs(): void

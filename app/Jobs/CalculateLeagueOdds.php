@@ -4,7 +4,8 @@ namespace App\Jobs;
 
 use App\Events\OddsCalculationFinished;
 use App\Models\Round;
-use App\Models\Team;
+use App\Repositories\RoundRepository\RoundRepositoryInterface;
+use App\Repositories\TeamRepository\TeamRepository;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
@@ -12,10 +13,15 @@ class CalculateLeagueOdds implements ShouldQueue
 {
     use Queueable;
 
+    public function __construct(private readonly TeamRepository $teamRepository, private readonly RoundRepositoryInterface $roundRepository)
+    {
+    }
+
     public function handle(): void
     {
-        $teams = Team::all();
-        $rounds = Round::all();
+        $teams = $this->teamRepository->all();
+        $rounds = $this->roundRepository->all();
+
         $remainingRounds =  Round::TOTAL_ROUNDS - (int)ceil($rounds->count() / 2);
 
         $teamOdds = [];

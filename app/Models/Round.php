@@ -2,10 +2,17 @@
 
 namespace App\Models;
 
+use App\Exceptions\RoundsLimitExceeded;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * App\Models\Round
+ *
+ * @property int|null $home_team_goals
+ * @property int|null $guest_team_goals
+ */
 class Round extends Model
 {
     use HasFactory;
@@ -42,7 +49,6 @@ class Round extends Model
 
     public $timestamps = false;
 
-
     public function homeTeam(): BelongsTo
     {
         return $this->belongsTo(Team::class, 'home_team_id');
@@ -53,6 +59,11 @@ class Round extends Model
         return $this->belongsTo(Team::class, 'guest_team_id');
     }
 
+    public function getScoreAttribute(): string
+    {
+        return $this->home_team_goals . ' - ' . $this->guest_team_goals;
+    }
+
     public static function getMatchesSetup(): array
     {
         return self::MATCHES_SETUP;
@@ -60,6 +71,9 @@ class Round extends Model
 
     public static function getSetupByRound(int $round): array
     {
+        if ($round >= self::ROUNDS_LIMIT) {
+            throw new RoundsLimitExceeded("There are total of ". self::ROUNDS_LIMIT . " rounds");
+        }
         return self::MATCHES_SETUP[$round];
     }
 

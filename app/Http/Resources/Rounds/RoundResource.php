@@ -18,7 +18,7 @@ class RoundResource extends JsonResource
         return [
             'homeTeam' => $this->homeTeam->name,
             'guestTeam' => $this->guestTeam->name,
-            'score' => $this->home_team_goals . ' - ' . $this->guest_team_goals
+            'score' => $this->score
         ];
     }
 }
