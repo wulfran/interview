@@ -28,9 +28,10 @@ class RoundsController extends Controller
                 'message' => 'Round successfully played!',
             ]);
         } catch (\Throwable $e) {
+            report($e);
             return response()->json([
                 'message' => $e->getMessage(),
-            ],$e->getCode());
+            ],$e->getCode() !== 0 ? $e->getCode() : 500);
         }
     }
 

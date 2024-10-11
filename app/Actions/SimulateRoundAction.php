@@ -2,33 +2,62 @@
 
 namespace App\Actions;
 
+use App\Exceptions\RoundsLimitExceeded;
 use App\Models\Round;
-use App\Models\Team;
+use App\Repositories\RoundRepository\RoundRepositoryInterface;
+use App\Repositories\TeamRepository\TeamRepositoryInterface;
 use Illuminate\Support\Collection;
 
 class SimulateRoundAction
 {
     private Collection $teams;
     private Collection $rounds;
-
     private array $schedule;
     private Collection $firstMatch;
     private Collection $secondMatch;
 
-    public function __construct()
+    public function __construct(
+        protected readonly TeamRepositoryInterface $teamRepository,
+        protected readonly RoundRepositoryInterface $roundRepository,
+        protected readonly PlayMatchAction $playMatchAction,
+        protected readonly SaveRoundDataAction $saveRoundDataAction,
+    )
     {
-        $this->teams = Team::all();
-        $this->rounds = Round::all();
-        if (($this->rounds->count() / 2) >= Round::getRoundsLimit()) {
-            throw new \Exception('Rounds limit exceeded');
-        }
-        $this->schedule = Round::getSetupByRound($this->rounds->count() / 2);
+    }
+
+    private function initialize(): void
+    {
+        $this->initializeTeams();
+        $this->initializeRounds();
+        $this->checkRoundLimits();
+        $this->initializeSchedule();
+        $this->initializeMatches();
+    }
+
+    public function initializeTeams(): void
+    {
+        $this->teams = $this->teamRepository->all();
+    }
+
+    public function initializeRounds(): void
+    {
+        $this->rounds = $this->roundRepository->all();
+    }
+
+    public function initializeSchedule(): void
+    {
+        $this->schedule = Round::getSetupByRound((int)($this->rounds->count() / 2));
+    }
+
+    public function initializeMatches(): void
+    {
         $this->firstMatch = collect();
         $this->secondMatch = collect();
     }
 
     public function execute(): void
     {
+        $this->initialize();
         $this->setPairs();
         try {
             $this->playMatch();
@@ -40,10 +69,10 @@ class SimulateRoundAction
 
     private function setPairs(): void
     {
-        $i1 = $this->schedule[0][0];
-        $i2 = $this->schedule[0][1];
-        $i3 = $this->schedule[1][0];
-        $i4 = $this->schedule[1][1];
+        $i1 = $this->getTeamIndex(0,0);
+        $i2 = $this->getTeamIndex(0,1);
+        $i3 = $this->getTeamIndex(1,0);
+        $i4 = $this->getTeamIndex(1,1);
 
         $this->firstMatch->push($this->teams[$i1]);
         $this->firstMatch->push($this->teams[$i2]);
@@ -51,47 +80,30 @@ class SimulateRoundAction
         $this->secondMatch->push($this->teams[$i4]);
     }
 
-    private function getMatchOutcome(): int
+    public function getTeamIndex(int $firstIndex, int $secondIndex): int
     {
-        // result 0 => home team wins
-        // result 1 => guest team wins
-        // result 2 => draw
-        return rand(0,2);
+        return $this->schedule[$firstIndex][$secondIndex];
     }
 
     private function playMatch(string $matchNumber='firstMatch'): void
     {
-        $result = $this->getMatchOutcome();
-        $min  = $result === 2 ? 0 : 1;
-        $winningTeamGoals = $this->getTeamGoals($min);
-        $limit = $result === 2 ? $min : $min - 1;
-        $losingTeamGoals = $this->getTeamGoals(0, $limit);
-
-        $roundData = $this->prepareRoundData($matchNumber, $result, $winningTeamGoals, $losingTeamGoals);
-        $this->saveRound($roundData);
+        $outcome = $this->playMatchAction->execute();
+        $roundData = $this->prepareRoundData($matchNumber, $outcome);
+        $this->saveRoundDataAction->execute($roundData);
     }
 
-    private function getTeamGoals(int $min=0, int $max=6): int
+    public function prepareRoundData(string $matchNumber, array $outcome): array
     {
-        return rand($min, $max);
-    }
-
-    public function prepareRoundData(string $matchNumber, int $result, int $winningTeamGoals, int $losingTeamGoals): array
-    {
-        return [
+        return array_merge([
             'home_team_id' => $this->{$matchNumber}[0]->id,
             'guest_team_id' => $this->{$matchNumber}[1]->id,
-            'home_team_goals' => $result === 0 || $result == 2 ? $winningTeamGoals : $losingTeamGoals,
-            'guest_team_goals' => $result === 1 || $result == 2 ? $winningTeamGoals : $losingTeamGoals,
-        ];
+        ], $outcome);
     }
 
-    private function saveRound(array $roundData): void
+    private function checkRoundLimits(): void
     {
-        try {
-            Round::create($roundData);
-        } catch (\Exception $e) {
-            report($e);
+        if (($this->rounds->count() / 2) >= Round::getRoundsLimit()) {
+            throw new RoundsLimitExceeded('Rounds limit exceeded', 422);
         }
     }
 }

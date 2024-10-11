@@ -16,7 +16,7 @@ class TeamRepository extends Repository implements TeamRepositoryInterface
     public function all(): Collection
     {
         return $this->model
-            ->select(['name', 'points', 'matches_played', 'wins', 'draws', 'loses', 'goal_balance'])
+            ->select(['id', 'name', 'points', 'matches_played', 'wins', 'draws', 'loses', 'goal_balance'])
             ->orderBy('points', 'desc')
             ->orderBy('goal_balance', 'desc')
             ->get();
