@@ -27,7 +27,6 @@ class TeamsController extends Controller
 
             return response()->json([
                 'message' => $e->getMessage(),
-                'data' => []
             ], $e->getCode());
         }
     }
