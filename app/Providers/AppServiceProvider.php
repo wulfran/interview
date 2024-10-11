@@ -6,21 +6,26 @@ use App\Models\Round;
 use App\Models\Team;
 use App\Observers\RoundObserver;
 use App\Observers\TeamObserver;
+use App\Repositories\Repository;
+use App\Repositories\RepositoryInterface;
+use App\Repositories\TeamRepository\TeamRepository;
+use App\Repositories\TeamRepository\TeamRepositoryInterface;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
+    public array $bindings = [
+        RepositoryInterface::class => Repository::class,
+        TeamRepositoryInterface::class => TeamRepository::class,
+    ];
+
     public function register(): void
     {
-        //
+        foreach ($this->bindings as $abstract => $specific) {
+            $this->app->bind($abstract, $specific);
+        }
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         Round::observe(RoundObserver::class);
