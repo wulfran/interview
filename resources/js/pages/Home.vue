@@ -87,8 +87,10 @@ export default defineComponent({
     methods: {
         async getTeams() {
             try {
-                const {data} = await axios.get('api/teams')
-                this.teams = data.data.data
+                const {status, data} = await axios.get('api/teams')
+                if(status === 200) {
+                    this.teams = data.data.data
+                }
             } catch (err: any) {
                 console.error(err)
             }
@@ -108,8 +110,10 @@ export default defineComponent({
         },
         async getRounds() {
             try {
-                const {data} = await axios.get('api/rounds')
-                this.rounds = data.data.data
+                const {status, data} = await axios.get('api/rounds')
+                if(status ===200) {
+                    this.rounds = data.data.data
+                }
             } catch (err: any) {
                 console.error(err)
             }
