@@ -10,14 +10,9 @@ class Round extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'home_team_id',
-        'guest_team_id',
-        'home_team_goals',
-        'guest_team_goals',
-    ];
+    public const TOTAL_ROUNDS = 12;
 
-    public $timestamps = false;
+    private const ROUNDS_LIMIT = 4;
 
     private const MATCHES_SETUP = [
         0 => [
@@ -38,9 +33,15 @@ class Round extends Model
         ],
     ];
 
-    public const TOTAL_ROUNDS = 12;
+    protected $fillable = [
+        'home_team_id',
+        'guest_team_id',
+        'home_team_goals',
+        'guest_team_goals',
+    ];
 
-    private const ROUNDS_LIMIT = 4;
+    public $timestamps = false;
+
 
     public function homeTeam(): BelongsTo
     {
