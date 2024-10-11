@@ -9,7 +9,7 @@ use Illuminate\Http\JsonResponse;
 
 class TeamsController extends Controller
 {
-    public function __invoke(): JsonResponse
+    public function index(): JsonResponse
     {
         try {
             $teams = Team::query()
