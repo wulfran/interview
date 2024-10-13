@@ -5,20 +5,19 @@ namespace App\Jobs;
 use App\Events\OddsCalculationFinished;
 use App\Models\Round;
 use App\Repositories\RoundRepository\RoundRepositoryInterface;
-use App\Repositories\TeamRepository\TeamRepository;
+use App\Repositories\TeamRepository\TeamRepositoryInterface;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 
 class CalculateLeagueOdds implements ShouldQueue
 {
     use Queueable;
-
-    public function __construct(private readonly TeamRepository $teamRepository, private readonly RoundRepositoryInterface $roundRepository)
-    {
-    }
+    private TeamRepositoryInterface $teamRepository;
+    private RoundRepositoryInterface $roundRepository;
 
     public function handle(): void
     {
+        $this->initializeDependencies();
         $teams = $this->teamRepository->all();
         $rounds = $this->roundRepository->all();
 
@@ -37,5 +36,11 @@ class CalculateLeagueOdds implements ShouldQueue
         arsort($teamOdds);
 
         OddsCalculationFinished::dispatch($teamOdds);
+    }
+
+    private function initializeDependencies(): void
+    {
+        $this->teamRepository = app(TeamRepositoryInterface::class);
+        $this->roundRepository = app(RoundRepositoryInterface::class);
     }
 }
